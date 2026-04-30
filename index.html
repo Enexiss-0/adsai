@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdsAI - Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">AdsAI</div>
+      <button id="logoutBtn" class="btn btn-light hidden">Sair</button>
+    </header>
+
+    <main class="main-content">
+      <section id="authSection" class="auth-panel">
+        <div class="auth-card">
+          <div class="auth-header">
+            <h1>Bem-vindo ao AdsAI</h1>
+            <p>Faça login ou registre-se para começar a gerar anúncios com IA.</p>
+          </div>
+
+          <div class="tab-list">
+            <button id="loginTab" class="tab-button active">Login</button>
+            <button id="registerTab" class="tab-button">Registro</button>
+          </div>
+
+          <div id="loginForm" class="form-block">
+            <label>
+              Email
+              <input type="email" id="loginEmail" placeholder="seu@email.com">
+            </label>
+            <label>
+              Senha
+              <input type="password" id="loginPassword" placeholder="Senha">
+            </label>
+            <button id="loginBtn" class="btn btn-primary">Entrar</button>
+            <p class="helper-text">Ainda não tem conta? <span id="switchToRegister">Crie agora.</span></p>
+          </div>
+
+          <div id="registerForm" class="form-block hidden">
+            <label>
+              Nome
+              <input type="text" id="registerName" placeholder="Seu nome">
+            </label>
+            <label>
+              Email
+              <input type="email" id="registerEmail" placeholder="seu@email.com">
+            </label>
+            <label>
+              Senha
+              <input type="password" id="registerPassword" placeholder="Senha">
+            </label>
+            <button id="registerBtn" class="btn btn-primary">Registrar</button>
+            <p class="helper-text">Já tem conta? <span id="switchToLogin">Faça login.</span></p>
+          </div>
+
+          <div id="authMessage" class="message" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section id="appSection" class="app-panel hidden">
+        <div class="app-header">
+          <div>
+            <p class="eyebrow">Área de geração</p>
+            <h2>Crie anúncios inteligentes</h2>
+          </div>
+          <div class="user-badge">Olá, <span id="userName">Usuário</span></div>
+        </div>
+
+        <div class="card-grid">
+          <article class="info-card">
+            <h3>Login protegido</h3>
+            <p>Seu acesso fica salvo no navegador para testes locais. Depois iremos conectar ao backend.</p>
+          </article>
+          <article class="info-card">
+            <h3>Registre sua conta</h3>
+            <p>Você pode testar a geração de anúncios e navegar com segurança pela dashboard.</p>
+          </article>
+        </div>
+
+        <div class="dashboard-card">
+          <h3>Nova ideia de anúncio</h3>
+          <label>
+            Descrição
+            <input type="text" id="adPrompt" placeholder="Ex: hambúrguer artesanal com fundo mesclado">
+          </label>
+          <label>
+            Estilo
+            <select id="adStyle">
+              <option>Moderno</option>
+              <option>Luxo</option>
+              <option>Minimalista</option>
+              <option>Colorido</option>
+            </select>
+          </label>
+          <button id="generateAdBtn" class="btn btn-primary">Gerar anúncio</button>
+          <div id="adResult" class="result-card">Seu anúncio aparecerá aqui.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

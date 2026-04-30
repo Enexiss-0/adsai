@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>AdsAI</title>
+
+<style>
+  :root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-soft: #f4f6fb;
+    --primary: #4f46e5;
+    --accent: #38bdf8;
+    --text: #0f172a;
+    --sub: #64748b;
+    --border: rgba(100, 116, 139, 0.2);
+    --shadow: 0 20px 60px rgba(15, 23, 42, 0.1);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 24%),
+                linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: min(1120px, calc(100% - 32px));
+    margin: auto;
+    padding: 32px 0 64px;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    background: rgba(248,250,252,0.88);
+    backdrop-filter: blur(18px);
+    z-index: 20;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .nav-link {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 10px 12px;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    background: rgba(79, 70, 229, 0.12);
+    color: var(--primary);
+  }
+
+  .page-section {
+    display: block;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.32s ease, transform 0.32s ease;
+  }
+
+  .page-section.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .logo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .nav-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn, .btn-secondary {
+    border: none;
+    border-radius: 999px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+
+  .btn {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 12px 20px;
+    box-shadow: 0 16px 35px rgba(56, 189, 248, 0.18);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.85);
+    color: var(--text);
+    padding: 11px 18px;
+    border: 1px solid var(--border);
+  }
+
+  .btn:hover, .btn-secondary:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 48px 0 24px;
+  }
+
+  .hero-copy {
+    max-width: 640px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 5vw, 3.8rem);
+    line-height: 1.02;
+    margin: 0 0 16px;
+    color: #111827;
+  }
+
+  .hero p {
+    margin: 0;
+    color: var(--sub);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    max-width: 600px;
+  }
+
+  .hero-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.12);
+    color: #0f172a;
+    font-size: 0.95rem;
+  }
+
+  .hero-note::before {
+    content: "✓";
+    display: inline-block;
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  .dashboard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+    margin: 0 auto 48px;
+    max-width: 760px;
+  }
+
+  .dashboard h2 {
+    font-size: 1.5rem;
+    margin: 0 0 18px;
+    color: #111827;
+  }
+
+  .dashboard .form-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 0.5fr;
+    gap: 18px;
+    margin-bottom: 20px;
+  }
+
+  input, select {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: var(--surface-soft);
+    color: var(--text);
+    padding: 16px 18px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  input::placeholder {
+    color: #94a3b8;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(99,102,241,0.12);
+  }
+
+  .generate {
+    width: 100%;
+    padding: 16px 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border: none;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 18px 30px rgba(56, 189, 248, 0.18);
+  }
+
+  .result {
+    margin-top: 24px;
+    min-height: 160px;
+    border-radius: 24px;
+    border: 1px dashed var(--border);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 28px;
+    background: var(--surface-soft);
+    color: var(--sub);
+    line-height: 1.7;
+  }
+
+  .testimonials,
+  .pricing {
+    margin-bottom: 48px;
+  }
+
+  .section-heading {
+    font-size: 1.35rem;
+    margin: 0 0 24px;
+    color: #111827;
+  }
+
+  .cards-grid {
+    display: grid;
+    gap: 20px;
+  }
+
+  .feature-card,
+  .testimonial-card,
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  .feature-card h3,
+  .testimonial-card h3,
+  .pricing-card h3 {
+    margin: 0 0 14px;
+    color: #111827;
+    font-size: 1.1rem;
+  }
+
+  .feature-card p,
+  .testimonial-card p,
+  .pricing-card p,
+  .pricing-card li {
+    margin: 0;
+    color: var(--sub);
+    line-height: 1.75;
+  }
+
+  .feature-card p {
+    margin-top: 10px;
+  }
+
+  .testimonial-card span {
+    display: inline-block;
+    margin-top: 18px;
+    color: #334155;
+    font-size: 0.95rem;
+  }
+
+  .pricing-card .price {
+    margin: 0 0 14px;
+    font-size: 2rem;
+    color: #111827;
+    font-weight: 700;
+  }
+
+  .pricing-card ul {
+    margin: 16px 0 0;
+    padding-left: 20px;
+  }
+
+  .pricing-card li {
+    margin-bottom: 10px;
+  }
+
+  .pricing-card .cta {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(56,189,248,0.18));
+    color: #0f172a;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 56px;
+    color: var(--sub);
+    font-size: 0.95rem;
+  }
+
+  @media (min-width: 900px) {
+    .cards-grid.columns-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .dashboard .form-grid {
+      grid-template-columns: 1.5fr 0.5fr;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .cards-grid.columns-3,
+    .dashboard .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .container {
+      width: min(100%, calc(100% - 24px));
+    }
+
+    .topbar {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .btn,
+    .btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <header class="topbar">
+    <div class="logo">AdsAI</div>
+    <nav class="nav-actions">
+      <a href="#geracao" class="nav-link" data-section="geracao">Geração</a>
+      <a href="#depoimentos" class="nav-link" data-section="depoimentos">Depoimentos</a>
+      <a href="#planos" class="nav-link" data-section="planos">Planos</a>
+      <button class="btn">Começar grátis</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="geracao" data-tab="geracao" class="hero page-section">
+      <div class="hero-copy">
+        <h1>Gere anúncios de alta conversão sem complicação</h1>
+        <p>Comece diretamente pela geração: descreva o briefing, escolha um estilo e obtenha um anúncio pronto para usar.</p>
+        <div class="hero-note">Visão focada: geração limpa, interface clara e sem excesso de informações.</div>
+      </div>
+    </section>
+
+    <section data-tab="geracao" class="dashboard page-section">
+      <h2>Novo anúncio</h2>
+      <div class="form-grid">
+        <input id="prompt" type="text" placeholder="Ex: anúncio de hamburguer artesanal com fundo escuro e luz dramática">
+        <select id="style-select">
+          <option>Estilo moderno</option>
+          <option>Luxo</option>
+          <option>Minimalista</option>
+          <option>Colorido</option>
+        </select>
+      </div>
+      <button class="generate" id="generate-btn">Gerar anúncio</button>
+      <div class="result" id="result-box">Seu anúncio será exibido aqui em instantes.</div>
+    </section>
+
+    <section id="depoimentos" data-tab="depoimentos" class="testimonials page-section hidden">
+      <h2 class="section-heading">Depoimentos</h2>
+      <div class="cards-grid columns-3">
+        <article class="testimonial-card">
+          <h3>“Campanhas prontas em minutos.”</h3>
+          <p>Meu processo de criação ficou muito mais rápido e o resultado visual combina com o meu público.</p>
+          <span>— Lucas, loja de moda</span>
+        </article>
+        <article class="testimonial-card">
+          <h3>“Perfeito para quem precisa entregar rápido.”</h3>
+          <p>Adoro a simplicidade: foco na geração e depois posso explorar os planos com tranquilidade.</p>
+          <span>— Marina, marketing digital</span>
+        </article>
+        <article class="testimonial-card">
+          <h3>“Sem ruído, só resultados.”</h3>
+          <p>O layout é clean, e eu consigo usar a ferramenta sem distrações. Ideal para produção rápida.</p>
+          <span>— Rafael, freelancer</span>
+        </article>
+      </div>
+    </section>
+
+    <section id="planos" data-tab="planos" class="pricing page-section hidden">
+      <h2 class="section-heading">Planos</h2>
+      <div class="cards-grid columns-3">
+        <article class="pricing-card">
+          <h3>Starter</h3>
+          <div class="price">R$49/mês</div>
+          <ul>
+            <li>5 anúncios gerados</li>
+            <li>1 estilo customizado</li>
+            <li>Suporte por chat</li>
+          </ul>
+          <a href="#" class="cta">Assinar Starter</a>
+        </article>
+        <article class="pricing-card">
+          <h3>Pro</h3>
+          <div class="price">R$129/mês</div>
+          <ul>
+            <li>30 anúncios gerados</li>
+            <li>Estilos avançados</li>
+            <li>Exportação direta</li>
+          </ul>
+          <a href="#" class="cta">Assinar Pro</a>
+        </article>
+        <article class="pricing-card">
+          <h3>Growth</h3>
+          <div class="price">R$249/mês</div>
+          <ul>
+            <li>Geração ilimitada</li>
+            <li>Templates exclusivos</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="#" class="cta">Assinar Growth</a>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    © 2026 AdsAI — Crie anúncios de alta conversão para redes sociais e campanhas digitais.
+  </footer>
+</div>
+
+<script>
+  const promptInput = document.getElementById('prompt');
+  const styleSelect = document.getElementById('style-select');
+  const resultBox = document.getElementById('result-box');
+  const generateBtn = document.getElementById('generate-btn');
+  const navLinks = document.querySelectorAll('.nav-link[data-section]');
+  const pageSections = document.querySelectorAll('.page-section');
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      setActiveTab(link.dataset.section);
+    });
+  });
+
+  const initialTab = window.location.hash.replace('#', '') || 'geracao';
+  setActiveTab(['geracao', 'depoimentos', 'planos'].includes(initialTab) ? initialTab : 'geracao');
+
+  function setActiveTab(tab) {
+    pageSections.forEach(section => {
+      const isActive = section.dataset.tab === tab;
+      section.classList.toggle('hidden', !isActive);
+      section.classList.toggle('active', isActive);
+    });
+
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.dataset.section === tab);
+    });
+
+    history.replaceState(null, '', `#${tab}`);
+  }
+
+  generateBtn.addEventListener('click', () => {
+    const prompt = promptInput.value.trim();
+    const style = styleSelect.value;
+
+    if (!prompt) {
+      resultBox.innerHTML = '<strong style="color:#0f172a;">Digite uma ideia de anúncio para gerar.</strong>';
+      return;
+    }
+
+    resultBox.innerHTML = `
+      <div style="max-width:560px;text-align:left;">
+        <p style="margin:0 0 12px;color:#64748b;font-size:0.95rem;letter-spacing:0.03em;">Anúncio gerado</p>
+        <h3 style="margin:0 0 12px;color:#111827;font-size:1.15rem;line-height:1.35;">${style} para “${prompt}”</h3>
+        <p style="margin:0;color:#475569;line-height:1.85;">Use uma imagem impactante, um título direto e um call to action focado em conversão. Público-alvo: quem busca soluções rápidas e visual atraente para comprar agora.</p>
+        <p style="margin:18px 0 0;font-size:0.95rem;color:#4f46e5;font-weight:700;">Pronto! Ajuste a descrição ou estilo e gere outra variação.</p>
+      </div>
+    `;
+  });
+</script>
+</body>
+</html>
