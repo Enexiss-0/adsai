@@ -24,6 +24,7 @@
           <div class="tab-list">
             <button id="loginTab" class="tab-button active">Login</button>
             <button id="registerTab" class="tab-button">Registro</button>
+            <button id="confirmTab" class="tab-button">Confirmar email</button>
           </div>
 
           <div id="loginForm" class="form-block">
@@ -56,6 +57,13 @@
             <p class="helper-text">Já tem conta? <span id="switchToLogin">Faça login.</span></p>
           </div>
 
+          <div id="confirmForm" class="form-block hidden">
+            <p>Enviamos um email para <strong id="confirmEmailValue"></strong>.</p>
+            <p>Abra seu email e clique no link de confirmação para ativar sua conta.</p>
+            <button id="resendConfirmationBtn" class="btn btn-secondary">Reenviar email</button>
+            <p class="helper-text">Se não chegar, verifique a pasta de spam.</p>
+          </div>
+
           <div id="authMessage" class="message" aria-live="polite"></div>
         </div>
       </section>
@@ -72,7 +80,7 @@
         <div class="card-grid">
           <article class="info-card">
             <h3>Login protegido</h3>
-            <p>Seu acesso fica salvo no navegador para testes locais. Depois iremos conectar ao backend.</p>
+            <p>Seus dados e sessões são salvos na nuvem com Supabase.</p>
           </article>
           <article class="info-card">
             <h3>Registre sua conta</h3>

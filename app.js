@@ -1,7 +1,11 @@
 const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
+const confirmTab = document.getElementById('confirmTab');
 const loginForm = document.getElementById('loginForm');
 const registerForm = document.getElementById('registerForm');
+const confirmForm = document.getElementById('confirmForm');
+const confirmEmailValue = document.getElementById('confirmEmailValue');
+const resendConfirmationBtn = document.getElementById('resendConfirmationBtn');
 const authMessage = document.getElementById('authMessage');
 const authSection = document.getElementById('authSection');
 const appSection = document.getElementById('appSection');
@@ -25,16 +29,22 @@ function showMessage(text, type = 'error') {
 }
 
 function switchTab(tab) {
+  loginTab.classList.remove('active');
+  registerTab.classList.remove('active');
+  confirmTab.classList.remove('active');
+  loginForm.classList.add('hidden');
+  registerForm.classList.add('hidden');
+  confirmForm.classList.add('hidden');
+
   if (tab === 'login') {
     loginTab.classList.add('active');
-    registerTab.classList.remove('active');
     loginForm.classList.remove('hidden');
-    registerForm.classList.add('hidden');
-  } else {
-    loginTab.classList.remove('active');
+  } else if (tab === 'register') {
     registerTab.classList.add('active');
-    loginForm.classList.add('hidden');
     registerForm.classList.remove('hidden');
+  } else if (tab === 'confirm') {
+    confirmTab.classList.add('active');
+    confirmForm.classList.remove('hidden');
   }
 
   showMessage('');
@@ -75,6 +85,11 @@ function showAuth() {
   switchTab('login');
 }
 
+function showConfirmTab(email) {
+  confirmEmailValue.textContent = email;
+  switchTab('confirm');
+}
+
 async function postJson(url, body, auth = false) {
   const options = {
     method: 'POST',
@@ -93,6 +108,7 @@ loginTab.addEventListener('click', () => switchTab('login'));
 registerTab.addEventListener('click', () => switchTab('register'));
 switchToRegister.addEventListener('click', () => switchTab('register'));
 switchToLogin.addEventListener('click', () => switchTab('login'));
+confirmTab.addEventListener('click', () => switchTab('confirm'));
 
 registerBtn.addEventListener('click', async () => {
   const name = document.getElementById('registerName').value.trim();
@@ -106,10 +122,20 @@ registerBtn.addEventListener('click', async () => {
 
   try {
     const data = await postJson(`${API_BASE}/register`, { name, email, password });
+    if (data.confirm_required) {
+      showMessage('Conta criada. Verifique seu email para confirmar.', 'success');
+      showConfirmTab(data.user.email);
+      return;
+    }
     setSession({ token: data.token, user: data.user });
     showMessage('Registro feito com sucesso!', 'success');
     showApp(data.user);
   } catch (error) {
+    if (error.message.includes('Confirme seu email')) {
+      showMessage('Conta criada. Verifique seu email para confirmar.', 'success');
+      showConfirmTab(email);
+      return;
+    }
     showMessage(error.message);
   }
 });
@@ -138,6 +164,15 @@ logoutBtn.addEventListener('click', () => {
   showAuth();
   adResult.textContent = 'Seu anúncio aparecerá aqui.';
   adPrompt.value = '';
+});
+
+resendConfirmationBtn.addEventListener('click', () => {
+  const email = confirmEmailValue.textContent;
+  if (!email) {
+    showMessage('Email inválido para reenviar confirmação.');
+    return;
+  }
+  showMessage('Por favor, verifique sua caixa de entrada. Se nada chegar, aguarde alguns minutos.', 'success');
 });
 
 generateAdBtn.addEventListener('click', async () => {
