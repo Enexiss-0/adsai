@@ -243,6 +243,13 @@ select:focus {
   text-align: center;
 }
 
+.generated-image {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 18px;
+  object-fit: contain;
+}
+
 .hidden {
   display: none !important;
 }

@@ -28,7 +28,23 @@ $env:OPENAI_API_KEY = "sua_chave_openai"
 
 Se você quiser testar sem chave OpenAI, deixe `OPENAI_API_KEY` vazio. O backend usa um gerador local simples para permitir testes gratuitos.
 
-3. Inicie o backend:
+3. Defina sua chave de API Google para gerar imagens:
+
+```powershell
+$env:GOOGLE_API_KEY = "sua_chave_google"
+```
+
+4. Defina o bucket do Supabase Storage para salvar as imagens:
+
+```powershell
+$env:SUPABASE_STORAGE_BUCKET = "Anuncios"
+```
+
+O bucket padrão agora é `Anuncios`. Crie esse bucket no painel do Supabase Storage ou ajuste o valor para o nome do bucket que você já tem.
+
+5. Não coloque chaves diretamente no código ou no repositório. Use sempre variáveis de ambiente.
+
+6. Inicie o backend:
 
 ```powershell
 python backend.py

@@ -1,6 +1,9 @@
+import base64
 import json
 import os
 import random
+import requests
+import time
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
@@ -13,6 +16,8 @@ if SUPABASE_URL.endswith('/rest/v1'):
     SUPABASE_URL = SUPABASE_URL[: -len('/rest/v1')]
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqbWJvYnFmeW5rZ21jY3B1ZXB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjQxNzUsImV4cCI6MjA5MzE0MDE3NX0.6IpdaoUg2B-h9TdSqLct77UKG4Vpu2fY77DLSbXHCDI'
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+SUPABASE_STORAGE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', 'Anuncios')
 USE_LOCAL_FALLBACK = os.environ.get('USE_LOCAL_FALLBACK', '1').lower() in ('1', 'true', 'yes')
 openai.api_key = OPENAI_API_KEY
 
@@ -206,6 +211,80 @@ def generate_ad():
             raise ValueError('Resposta inválida do modelo de IA.')
 
         return jsonify({'result': {'title': title, 'description': description}})
+    except Exception as error:
+        return jsonify({'message': str(error)}), 500
+
+
+def upload_image_to_supabase(user_id, path, image_bytes):
+    upload_response = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).upload(
+        path,
+        image_bytes,
+        {'content-type': 'image/png'}
+    )
+    if upload_response.get('error'):
+        raise ValueError(f'Falha ao enviar imagem para Supabase: {upload_response.get("error")}')
+
+    signed_response = supabase.storage.from_(SUPABASE_STORAGE_BUCKET).create_signed_url(path, 86400)
+    if signed_response.get('error'):
+        raise ValueError(f'Falha ao criar URL assinada: {signed_response.get("error")}')
+
+    return signed_response.get('signedUrl')
+
+
+def generate_google_image(prompt, size='1024x1024'):
+    if not GOOGLE_API_KEY:
+        raise ValueError('GOOGLE_API_KEY não configurada. Defina a variável de ambiente GOOGLE_API_KEY.')
+
+    url = 'https://generativelanguage.googleapis.com/v1/images:generate'
+    payload = {
+        'model': 'image-bison-1',
+        'prompt': prompt,
+        'size': size,
+    }
+    response = requests.post(f'{url}?key={GOOGLE_API_KEY}', json=payload, timeout=30)
+    response.raise_for_status()
+    data = response.json()
+
+    image_bytes = None
+    if isinstance(data, dict):
+        if 'artifacts' in data and data['artifacts']:
+            artifact = data['artifacts'][0]
+            b64_json = artifact.get('b64_json')
+            if b64_json:
+                image_bytes = base64.b64decode(b64_json)
+            elif artifact.get('imageUri'):
+                image_uri = artifact['imageUri']
+                image_bytes = requests.get(image_uri, timeout=30).content
+        elif 'data' in data and data['data']:
+            b64_json = data['data'][0].get('b64_json')
+            if b64_json:
+                image_bytes = base64.b64decode(b64_json)
+
+    if not image_bytes:
+        raise ValueError('Resposta inesperada da API Google. Não foi possível obter a imagem.')
+
+    return image_bytes
+
+
+@app.route('/api/generate-image', methods=['POST'])
+def generate_image():
+    auth = request.headers.get('Authorization', '')
+    token = auth.replace('Bearer ', '') if auth.startswith('Bearer ') else None
+    user = get_user_from_token(token)
+    if not user:
+        return jsonify({'message': 'Token inválido ou expirado.'}), 401
+
+    body = request.get_json() or {}
+    prompt = body.get('prompt', '').strip()
+    size = body.get('size', '1024x1024').strip()
+    if not prompt:
+        return jsonify({'message': 'Descrição da imagem é obrigatória.'}), 400
+
+    try:
+        image_bytes = generate_google_image(prompt, size)
+        filename = f'images/{user.id}/{int(time.time())}.png'
+        image_url = upload_image_to_supabase(user.id, filename, image_bytes)
+        return jsonify({'result': {'imageUrl': image_url, 'storagePath': filename}})
     except Exception as error:
         return jsonify({'message': str(error)}), 500
 

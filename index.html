@@ -106,6 +106,25 @@
           <button id="generateAdBtn" class="btn btn-primary">Gerar anúncio</button>
           <div id="adResult" class="result-card">Seu anúncio aparecerá aqui.</div>
         </div>
+
+        <div class="dashboard-card">
+          <h3>Gerar imagem IA</h3>
+          <label>
+            Descrição da imagem
+            <input type="text" id="imagePrompt" placeholder="Ex: logotipo moderno em estilo minimalista">
+          </label>
+          <label>
+            Proporção
+            <select id="imageRatio">
+              <option value="1:1">1:1</option>
+              <option value="16:9">16:9</option>
+              <option value="9:16">9:16</option>
+              <option value="4:3">4:3</option>
+            </select>
+          </label>
+          <button id="generateImageBtn" class="btn btn-primary">Gerar imagem</button>
+          <div id="imageResult" class="result-card">Sua imagem aparecerá aqui.</div>
+        </div>
       </section>
     </main>
   </div>

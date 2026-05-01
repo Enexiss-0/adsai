@@ -19,6 +19,17 @@ const adPrompt = document.getElementById('adPrompt');
 const adStyle = document.getElementById('adStyle');
 const generateAdBtn = document.getElementById('generateAdBtn');
 const adResult = document.getElementById('adResult');
+const imagePrompt = document.getElementById('imagePrompt');
+const imageRatio = document.getElementById('imageRatio');
+const generateImageBtn = document.getElementById('generateImageBtn');
+const imageResult = document.getElementById('imageResult');
+
+const imageSizes = {
+  '1:1': '1024x1024',
+  '16:9': '1024x576',
+  '9:16': '576x1024',
+  '4:3': '1024x768'
+};
 
 const API_BASE = '/api';
 const SESSION_KEY = 'adsai_session';
@@ -195,6 +206,29 @@ generateAdBtn.addEventListener('click', async () => {
     `;
   } catch (error) {
     adResult.textContent = error.message;
+  }
+});
+
+generateImageBtn.addEventListener('click', async () => {
+  const prompt = imagePrompt.value.trim();
+  const ratio = imageRatio.value;
+  const size = imageSizes[ratio] || '1024x1024';
+
+  if (!prompt) {
+    imageResult.textContent = 'Digite a descrição da imagem para gerar o resultado.';
+    return;
+  }
+
+  try {
+    const data = await postJson(`${API_BASE}/generate-image`, { prompt, size }, true);
+    imageResult.innerHTML = `
+      <div>
+        <p class="eyebrow">Imagem gerada</p>
+        <img src="${data.result.imageUrl}" alt="Imagem gerada" class="generated-image" />
+      </div>
+    `;
+  } catch (error) {
+    imageResult.textContent = error.message;
   }
 });
 
