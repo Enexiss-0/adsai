@@ -1,7 +1,10 @@
+import json
 import os
+import random
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from supabase import create_client
+import openai
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_SUPABASE_URL = os.environ.get('SUPABASE_URL', 'https://kjmbobqfynkgmccpuepx.supabase.co/rest/v1/')
@@ -9,6 +12,31 @@ SUPABASE_URL = RAW_SUPABASE_URL.rstrip('/')
 if SUPABASE_URL.endswith('/rest/v1'):
     SUPABASE_URL = SUPABASE_URL[: -len('/rest/v1')]
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqbWJvYnFmeW5rZ21jY3B1ZXB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjQxNzUsImV4cCI6MjA5MzE0MDE3NX0.6IpdaoUg2B-h9TdSqLct77UKG4Vpu2fY77DLSbXHCDI'
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+USE_LOCAL_FALLBACK = os.environ.get('USE_LOCAL_FALLBACK', '1').lower() in ('1', 'true', 'yes')
+openai.api_key = OPENAI_API_KEY
+
+def generate_local_ad(prompt, style):
+    titles = [
+        f'{style} para {prompt}',
+        f'{style} com foco em {prompt}',
+        f'{prompt} no estilo {style}',
+        f'{style} que destaca {prompt}'
+    ]
+    actions = ['compre agora', 'saiba mais', 'experimente hoje', 'veja já']
+    benefits = [
+        'aumente suas vendas',
+        'chame mais atenção',
+        'valorize sua marca',
+        'conquiste novos clientes'
+    ]
+    title = random.choice(titles)
+    description = (
+        f'Anúncio gerado localmente: destaque {benefits[random.randrange(len(benefits))]}, '
+        f'use linguagem clara e um convite para {random.choice(actions)}. '
+        f'Foque em {prompt} para atrair seu público no estilo {style}.'
+    )
+    return title, description
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
@@ -136,9 +164,50 @@ def generate_ad():
     if not prompt or not style:
         return jsonify({'message': 'Prompt e estilo são obrigatórios.'}), 400
 
-    title = f'{style} para {prompt}'
-    description = 'Anúncio com foco em conversão: destaque o benefício principal, use uma chamada simples e convide o usuário a agir agora.'
-    return jsonify({'result': {'title': title, 'description': description}})
+    if not OPENAI_API_KEY:
+        if USE_LOCAL_FALLBACK:
+            title, description = generate_local_ad(prompt, style)
+            return jsonify({'result': {'title': title, 'description': description}})
+        return jsonify({'message': 'OPENAI_API_KEY não configurada. Defina a variável de ambiente OPENAI_API_KEY.'}), 500
+
+    try:
+        response = openai.ChatCompletion.create(
+            model=os.environ.get('OPENAI_MODEL', 'gpt-3.5-turbo'),
+            messages=[
+                {
+                    'role': 'system',
+                    'content': (
+                        'Você é um assistente especialista em copywriting para anúncios online. '
+                        'Gere um título curto e persuasivo e uma descrição que destaque benefícios, valor e um chamado à ação claro.'
+                    )
+                },
+                {
+                    'role': 'user',
+                    'content': (
+                        f'Crie um anúncio para: "{prompt}" no estilo "{style}". '
+                        'Retorne apenas JSON válido com os campos title e description.'
+                    )
+                }
+            ],
+            max_tokens=200,
+            temperature=0.8,
+        )
+        content = response.choices[0].message.content.strip()
+        try:
+            result_data = json.loads(content)
+            title = result_data.get('title', '').strip()
+            description = result_data.get('description', '').strip()
+        except Exception:
+            lines = [line.strip() for line in content.splitlines() if line.strip()]
+            title = lines[0] if lines else f'{style} para {prompt}'
+            description = ' '.join(lines[1:]) if len(lines) > 1 else content
+
+        if not title or not description:
+            raise ValueError('Resposta inválida do modelo de IA.')
+
+        return jsonify({'result': {'title': title, 'description': description}})
+    except Exception as error:
+        return jsonify({'message': str(error)}), 500
 
 
 @app.route('/<path:path>')

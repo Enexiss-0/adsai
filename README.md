@@ -20,7 +20,15 @@ Site e backend de micro SaaS para geração de anúncios com IA.
 python -m pip install -r requirements.txt
 ```
 
-2. Inicie o backend:
+2. Defina sua chave de API OpenAI (opcional):
+
+```powershell
+$env:OPENAI_API_KEY = "sua_chave_openai"
+```
+
+Se você quiser testar sem chave OpenAI, deixe `OPENAI_API_KEY` vazio. O backend usa um gerador local simples para permitir testes gratuitos.
+
+3. Inicie o backend:
 
 ```powershell
 python backend.py
